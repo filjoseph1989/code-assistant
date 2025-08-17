@@ -160,9 +160,10 @@ def main():
     response_text = get_response_from_ollama(prompt)
     
     # Print the final response
-    print("\n--- ASSISTANT RESPONSE ---")
-    print(response_text)
-    print("--------------------------\n")
+    # print("\n--- ASSISTANT RESPONSE ---")
+    # print(response_text)
+    # print("--------------------------\n")
+    print("Saving the response to a file...")
 
     # Save the response to a file
     save_response_to_file(file_path, user_query, response_text)

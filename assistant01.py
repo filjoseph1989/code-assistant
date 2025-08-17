@@ -9,12 +9,16 @@ model_name = 'google/gemma-2b-it'
 
 # Use AutoModelForCausalLM for Gemma models, not Seq2SeqLM
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name, low_cpu_mem_usage=True)
 
 # Instruction-tuned models like gemma-it work best with a specific chat format.
 chat = [
-    { "role": "user", "content": "The capital of the philippines is?" },
+    {   
+        "role": "user", 
+        "content": "What is MCP?" 
+    },
 ]
+
 prompt = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
 input_ids = tokenizer.encode(prompt, return_tensors='pt')
 outputs = model.generate(input_ids, max_new_tokens=50)
