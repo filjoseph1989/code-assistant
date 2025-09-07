@@ -1,26 +1,36 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from sentence_transformers import SentenceTransformer
+import torch
+import os
 
-# Note: 'google/gemma-2b-it' is a gated model.
-# You must first:
-# 1. Visit https://huggingface.co/google/gemma-2b-it and accept the license.
-# 2. Log in via the terminal: `huggingface-cli login`
+# This environment variable silences the tokenizer parallelism warning.
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-model_name = 'google/gemma-2b-it'
+# Download from the 🤗 Hub
+model = SentenceTransformer("google/embeddinggemma-300m")
 
-# Use AutoModelForCausalLM for Gemma models, not Seq2SeqLM
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, low_cpu_mem_usage=True)
+# Run inference with queries and documents
+query = "Which planet is known as the Red Planet?"
+print(f"Query: \"{query}\"\n")
 
-# Instruction-tuned models like gemma-it work best with a specific chat format.
-chat = [
-    {   
-        "role": "user", 
-        "content": "What is MCP?" 
-    },
+documents = [
+    "Venus is often called Earth's twin because of its similar size and proximity.",
+    "Mars, known for its reddish appearance, is often referred to as the Red Planet.",
+    "Jupiter, the largest planet in our solar system, has a prominent red spot.",
+    "Saturn, famous for its rings, is sometimes mistaken for the Red Planet."
 ]
 
-prompt = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
-input_ids = tokenizer.encode(prompt, return_tensors='pt')
-outputs = model.generate(input_ids, max_new_tokens=50)
-response = tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True)
-print(response)
+# The .encode() method is the modern way to handle both single strings and lists.
+query_embedding = model.encode(query)
+document_embeddings = model.encode(documents)
+
+print("Shape of query embedding:", query_embedding.shape)
+print("Shape of document embeddings:", document_embeddings.shape)
+
+# Compute similarities to determine a ranking
+similarities = model.similarity(query_embedding, document_embeddings)
+print("\nSimilarity scores (Query vs. each Document):", similarities)
+
+# Find and print the best match
+best_match_index = torch.argmax(similarities)
+print(f"\n---> Best match found: '{documents[best_match_index]}'")
+print(f"---> Similarity score: {similarities[0][best_match_index]:.4f}")
