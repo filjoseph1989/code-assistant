@@ -1,4 +1,3 @@
-import argparse
 import requests
 import sys
 import os
@@ -128,41 +127,36 @@ def save_response_to_file(file_path, user_query, response_text):
 
 def main():
     """
-    Main function to parse arguments and run the code assistant.
+    Main function to run the interactive code assistant.
     """
-    parser = argparse.ArgumentParser(
-        description="A command-line code assistant using Ollama.",
-        epilog="Example: python code_assistant.py my_script.py 'What does the main function do?'"
-    )
-    
-    parser.add_argument(
-        'file',
-        type=str,
-        help='The path to the code file to analyze.'
-    )
-    
-    parser.add_argument(
-        'query',
-        type=str,
-        help='The question you have about the code.'
-    )
-    
-    args = parser.parse_args()
-    
-    file_path = args.file
-    user_query = args.query
-    
-    print(f"Analyzing '{file_path}' with query: '{user_query}'...")
+    print("--- Code Assistant ---")
+
+    # Get file path from user
+    file_path = input("Enter the path to the code file to analyze: ").strip()
+    if not file_path:
+        print("Error: File path cannot be empty.", file=sys.stderr)
+        sys.exit(1)
+
+    # Get multi-line query from user, simulating a textarea
+    print("\nEnter your question about the code (press Ctrl+D on Linux/macOS or Ctrl+Z then Enter on Windows to finish):")
+    user_query = sys.stdin.read().strip()
+    if not user_query:
+        print("\nError: Query cannot be empty.", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"\nAnalyzing '{file_path}'...")
     print("Please wait for the response from Ollama...")
-    
+
     # Generate the prompt and get the response
     prompt = generate_prompt(file_path, user_query)
     response_text = get_response_from_ollama(prompt)
-    
-    # Print the final response
-    # print("\n--- ASSISTANT RESPONSE ---")
-    # print(response_text)
-    # print("--------------------------\n")
+
+    # Print the response to the console for immediate feedback
+    print("\n" + "="*20)
+    print("Ollama's Response:")
+    print(response_text)
+    print("="*20 + "\n")
+
     print("Saving the response to a file...")
 
     # Save the response to a file
